@@ -1,0 +1,7 @@
+print('Enter your name:', end=' ')
+name = input()
+print('Enter your surname:', end=' ')
+surname = input()
+print('Enter your birth year:', end=' ')
+age = 2022 - int(input())
+print('Hello,', name, surname + ', your age is', str(age-1) + '-' + str(age), 'year.')
