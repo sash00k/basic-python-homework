@@ -53,13 +53,13 @@ class MyServer:
                 # return_dict = {'STUDENT_ID': [row[0] for row in info], 'NAME': [row[1] for row in info]}
 
         except FileNotFoundError:
-            return_dict = None
+            info = None
             raise Error404
         except Exception:
-            return_dict = None
+            info = None
             raise Error500
         except BaseException:
-            return_dict = None
+            info = None
             raise Error666
 
         return info
