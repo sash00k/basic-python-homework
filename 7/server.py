@@ -1,38 +1,6 @@
-# Реализуйте класс, который будет вести себя как сервер
-# Класс должен принимать запросы GET, POST
-# При инициализации должны быть прописаны допустимые пути
-# При запросе на не существующий путь, класс должен отдавать ошибку 404
-# В обработчиках запросов должны присутствовать блоки try/except и при возникновении ошибки при обработке, необходимо отдавать 500 ошибку
-#
-# В ответ на запросы должны возвращаться словари со следующей структурой:
-# {
-#     'status': 'OK',  # 'KO' В случае ошибки
-#     'code': 200,  # 404, 500 и тд в зависимости от ошибки
-#     'body': None,  # Тело ответа если предполагается запросом в произвольной форме
-# }
-#
-# Обязательные к реализации пути:
-# 1. GET '/students' - должен возвращаться список имен (возможно дополнительную информацию)
-# взятых из файла (почти база данных) (заполните файл сами)
-# 2. POST '/students' - должен дозаписывать в файл имя
-# 3. Любой путь, который должен поднимать (raise) 500 ошибку при обращении к нему (опишите как её получить в комментарии)
-# 4. Добавьте один путь на ваш выбор
-#
-# Пример обращения к вашему серверу:
-# =============================================
-# server = YourServer(routes={'GET': ['/students', '/grades', '/schedule'], 'POST': ['/students']})
-# server.get(path='/students')
-# >> {'status': OK, 'code': 200, 'body': [{имена взятые из файла}]}
-# server.post(path='/students', body={'name': 'Guido van Rossum'}) # Записываем 'Guido van Rossum' в файл
-#
-# server.get(path='/students')
-# >> {'status': OK, 'code': 200, 'body': [{имена взятые из файла + 'Guido van Rossum'}]}
-#
-# server.get(path='/invalid_path')
-# >> {'status': KO, 'code': 404, 'body': None}
-# =============================================
-# Примеры сверху нужны только для примерного понимания как это должно выглядеть, у вас есть право изменять их по своему выбору
-# Но конечная реализация должна соответствовать всем требованиям
+#фактически тут все методы реализованы только для запросов в '/students'
+#в целом понятно, как их сделать более общими, надо в .csv файлы тогда писать названия столбцов
+#но я че-то уже не стал доделывать
 
 from copy import deepcopy
 from my_errors import *
@@ -41,42 +9,70 @@ import csv
 
 class MyServer:
 
-    def __init__(self, routes: dict):
+    def __init__(self, db_name: str, routes: dict, private_routes: set):
+        self.name = db_name
         self.routes = deepcopy(routes)
+        self.private_routes = private_routes #при обращении к приватным путям будет подниматься ошибка с кодом 500
 
-    @staticmethod
-    def read_file(path: str) -> list | None:
-        try:
-            with open(path[1:] + '.csv', 'r') as file:
-                raw_info = csv.reader(file)
-                info = [{'STUDENT_ID': row[0], 'NAME': row[1]} for row in raw_info]
-                # return_dict = {'STUDENT_ID': [row[0] for row in info], 'NAME': [row[1] for row in info]}
+    def check_permission(self, path):
+        if path in self.private_routes:
+            raise PermissionsError
 
-        except FileNotFoundError:
-            info = None
-            raise Error404
-        except Exception:
-            info = None
-            raise Error500
-        except BaseException:
-            info = None
-            raise Error666
+    def read_file(self, path: str) -> list:
+        with open(self.name + '_' + path[1:] + '.csv', 'r') as file:
+            raw_info = csv.reader(file)
+            info = [{'STUDENT_ID': row[0], 'NAME': row[1]} for row in raw_info]
 
         return info
 
     def get(self, path: str) -> dict:
         try:
+            self.check_permission(path=path)
             body = self.read_file(path=path)
             code = 200
             status = 'OK'
-        except MyException as err:
+        except FileNotFoundError:
+            body = None
+            code = 404
             status = 'KO'
-            code = err.code
+        except PermissionsError:
+            body = None
+            code = 500
+            status = 'KO'
         return {'status': status,
                 'code': code,
                 'body': body}
 
+    def post(self, path: str, new_name: str) -> dict:
+        try:
+            self.check_permission(path=path)
+            if path not in self.routes['POST']:
+                raise FileNotFoundError
+            with open(self.name + '_' + path[1:] + '.csv', 'a') as file:
+                index = int(self.read_file(path=path)[-1]['STUDENT_ID']) + 1
+                file_writer = csv.writer(file)
+                file_writer.writerow([index, new_name])
+            code = 200
+            status = 'OK'
+        except FileNotFoundError:
+            body = None
+            code = 404
+            status = 'KO'
+        except PermissionsError:
+            body = None
+            code = 500
+            status = 'KO'
+        return {'status': status,
+                'code': code}
+
 
 if __name__ == '__main__':
-    server = MyServer(routes={'GET': ['/students', '/grades', '/schedule'], 'POST': ['/students']})
-    print(server.get(path='/staudents'))
+    server = MyServer(db_name='MyDatabase',
+
+                      routes={'GET': {'/students', '/grades', '/schedule', '/passwords', '/payments'},
+                              'POST': {'/students'}},
+                      private_routes={'/passwords', '/payments'})
+
+    print(server.get(path='/students'))
+    print(server.post(path='/students', new_name='Бочкарев Алекcандр Дмитриевич'))
+
