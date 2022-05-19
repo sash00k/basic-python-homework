@@ -32,9 +32,9 @@ class MyServer:
             body = None
             code = 404
             status = 'KO'
-        except PermissionsError:
+        except PermissionsError as err:
             body = None
-            code = 500
+            code = err.code
             status = 'KO'
         return {'status': status,
                 'code': code,
@@ -59,9 +59,9 @@ class MyServer:
             body = None
             code = 404
             status = 'KO'
-        except PermissionsError:
+        except PermissionsError as err:
             body = None
-            code = 500
+            code = err.code
             status = 'KO'
         return {'status': status,
                 'code': code}
