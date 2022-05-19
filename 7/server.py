@@ -1,6 +1,7 @@
-#фактически тут все методы реализованы только для запросов в '/students'
-#в целом понятно, как их сделать более общими, надо в .csv файлы тогда писать названия столбцов
-#но я че-то уже не стал доделывать
+# фактически тут все методы реализованы только для запросов в '/students'
+# в целом понятно, как их сделать более общими, надо в .csv файлы тогда писать названия столбцов
+# ну и тогда надо генерировать словари иначе: по первой считанной строке ключи, а по последующим - значения
+# но я че-то уже не стал доделывать
 
 from copy import deepcopy
 from my_errors import *
@@ -12,7 +13,7 @@ class MyServer:
     def __init__(self, db_name: str, routes: dict, private_routes: set):
         self.name = db_name
         self.routes = deepcopy(routes)
-        self.private_routes = private_routes #при обращении к приватным путям будет подниматься ошибка с кодом 500
+        self.private_routes = private_routes # при обращении к приватным путям будет подниматься ошибка с кодом 500
 
     def check_permission(self, path):
         if path in self.private_routes:
@@ -73,6 +74,13 @@ if __name__ == '__main__':
                               'POST': {'/students'}},
                       private_routes={'/passwords', '/payments'})
 
+    # correct requests
     print(server.get(path='/students'))
     print(server.post(path='/students', new_name='Бочкарев Алекcандр Дмитриевич'))
+    print()
+
+    # incorrect requests
+    print(server.get(path='/invalid_path'))
+    print(server.get(path='/passwords'))
+    print(server.post(path='/payments', new_name='Бочкарев Алекcандр Дмитриевич'))
 
