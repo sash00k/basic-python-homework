@@ -7,11 +7,11 @@ class MyServer:
 
     def __init__(self, db_name: str, routes: dict, private_routes: set):
         self.name = db_name
-        self.routes = deepcopy(routes)
-        self.private_routes = private_routes # при обращении к приватным путям будет подниматься ошибка с кодом 500
+        self.__routes = deepcopy(routes)
+        self.__private_routes = private_routes # при обращении к приватным путям будет подниматься ошибка с кодом 500
 
     def check_permission(self, path):
-        if path in self.private_routes:
+        if path in self.__private_routes:
             raise PermissionsError
 
     def read_file(self, path: str) -> list:
@@ -45,7 +45,7 @@ class MyServer:
     # ясно, что запрос на добавление, например, оценок, работал бы иначе, ну он и принимал бы другой набор данных
         try:
             self.check_permission(path=path)
-            if path not in self.routes['POST']:
+            if path not in self.__routes['POST']:
                 raise FileNotFoundError
             with open(self.name + '_' + path[1:] + '.csv', 'a') as file:
                 # у нас такая простенькая база данных, что в каждой таблице ключевое значения - 'STUDENT_ID'
