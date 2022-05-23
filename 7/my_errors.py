@@ -1,3 +1,2 @@
 class PermissionsError(Exception):
-    def __init__(self):
-        self.code = 500
+    code = 500

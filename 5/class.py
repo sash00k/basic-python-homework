@@ -1,16 +1,3 @@
-# Напишите класс Building
-# Необходимые атрибуты класса: дверь (состояние open/closed) (Может быть отдельным объектом), адрес, площадь
-# Класс должен иметь методы open_door, close_door
-# * Напишите два класса-наследника Building.
-# В первом классе добавьте атрибут со списком окон и возможностью их закрывать/открывать
-# Второй придумайте сами и добавьте к нему два любых метода
-# **
-# 1. Добавьте в классы возможность вывода через print({Building})) в формате
-# "{Тип строения} по адресу {адрес}. Дверь {открыта/закрыта}"
-# 2. Добавьте логику сложения двух строений. (Достаточно если будет реализовано только для двух строений одного и того же типа, для двух разных типов по желанию)
-# Итогом сложения должен быть объект по адресу строения с наибольшей площадью из слагаемых, с площадью равной суммарной площади двух строений
-# И дверь должна быть открыта если хотя бы одно из исходных строений было с открытой дверью
-
 class Building:
 
     def __init__(self, address, area=None, is_opened=True):
@@ -25,9 +12,9 @@ class Building:
         self.is_opened = False
 
     def __add__(self, other):
-        return Building(address = max((self, other), key = lambda x: x.area).address,
-                        area = self.area + other.area,
-                        is_opened = self.is_opened or other.is_opened)
+        return Building(address=max((self, other), key=lambda x: x.area).address,
+                        area=self.area + other.area,
+                        is_opened=self.is_opened or other.is_opened)
 
     def __str__(self):
         return f'Строение по адресу {self.address}. Дверь ' + ('открыта.' if self.is_opened else 'закрыта.')
@@ -42,10 +29,10 @@ class School(Building):
     def __add__(self, other):
         #не знаю, что тут лучше было: использовать наследованный метод, или скопипастить его содержимое сюда (то же с кафе)
         result = Building.__add__(self, other)
-        return School(address = result.address,
-                      area = result.area,
-                      is_opened = result.is_opened,
-                      windows = self.windows + other.windows)
+        return School(address=result.address,
+                      area=result.area,
+                      is_opened=result.is_opened,
+                      windows=self.windows + other.windows)
 
     def __str__(self):
         return f'Школа по адресу {self.address}. Дверь ' + ('открыта.' if self.is_opened else 'закрыта.')
